@@ -22,7 +22,7 @@ The installer [partitions the disk](https://github.com/tfc/nixos-auto-installer/
 
 - 512 MiB fat32 boot partition
 - 8 GiB swap partition
-- rest size ext4  nixos partition
+- rest size ext4 nixos partition
 
 The `root` user is the only user on the system. The password is `nixcademy`.
 
@@ -44,5 +44,5 @@ Add a wifi config to [`configuration.nix`](./configuration/configuration.nix) to
   };
 ```
 
-There are different ways to add passwords to a machine, and *this* is not a secure one as the password will be stored in the nix store.
-(Which is fine for *my* purposes, but maybe not yours)
+There are different ways to add passwords to a machine, and _this_ is not a secure one as the password will be stored in the nix store.
+(Which is fine for _my_ purposes, but maybe not yours)

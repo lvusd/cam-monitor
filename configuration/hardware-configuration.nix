@@ -1,4 +1,9 @@
-{ config, modulesPath, lib, ... }:
+{
+  config,
+  modulesPath,
+  lib,
+  ...
+}:
 
 {
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
@@ -42,7 +47,7 @@
     fsType = "ext4";
   };
 
-  swapDevices = [{ device = "/dev/disk/by-label/swap"; }];
+  swapDevices = [ { device = "/dev/disk/by-label/swap"; } ];
 
   networking.useDHCP = lib.mkDefault true;
 }
