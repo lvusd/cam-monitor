@@ -43,12 +43,10 @@
     unzip
   ];
 
-  services.xserver = {
-    desktopManager.gnome.enable = true;
-    displayManager.gdm.enable = true;
-    enable = true;
-    libinput.enable = true;
-  };
+  services.xserver.enable = true;
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
+  services.libinput.enable = true;
 
   boot.plymouth.enable = true;
 
@@ -58,11 +56,9 @@
     plymouth-logo.enable = true;
   };
 
-  hardware.opengl = {
-    # this fixes the "glXChooseVisual failed" bug,
-    # context: https://github.com/NixOS/nixpkgs/issues/47932
+  hardware.graphics = {
     enable = true;
-    driSupport32Bit = true;
+    enable32Bit = true;
   };
 
   security.sudo.wheelNeedsPassword = false;
