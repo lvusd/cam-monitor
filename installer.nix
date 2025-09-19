@@ -51,9 +51,8 @@ in
         done
       }
 
-      dev=/dev/sda
-      [ -b /dev/nvme0n1 ] && dev=/dev/nvme0n1
-      [ -b /dev/vda ] && dev=/dev/vda
+      biggestBlockDevice=$(${pkgs.util-linux}/bin/lsblk --bytes --json | ${pkgs.jq}/bin/jq -r '.blockdevices | map(select (.type = "disk")) | sort_by(.size) | reverse | .[0].name')
+      dev="/dev/$biggestBlockDevice"
 
       # the cryptic type stands for "EFI system partition"
       ${utillinux}/bin/sfdisk --wipe=always "$dev" <<-END
