@@ -5,20 +5,22 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
-    pre-commit-hooks.inputs.nixpkgs.follows = "nixpkgs";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "x86_64-linux" ];
-      perSystem = { config, system, pkgs, ... }: {
+      imports = [
+        inputs.treefmt-nix.flakeModule
+      ];
+      perSystem = { config, self', system, pkgs, ... }: {
         _module.args.pkgs = import inputs.nixpkgs {
           inherit system;
           config.allowUnfree = true;
         };
 
         devShells.default = pkgs.mkShell {
-          inherit (config.checks.pre-commit-check) shellHook;
+          packages = [ self'.formatter ];
         };
 
         packages = {
@@ -42,16 +44,14 @@
           '';
         };
 
-        checks = {
-          pre-commit-check = inputs.pre-commit-hooks.lib.${system}.run {
-            src = ./.;
-            hooks = {
-              deadnix.enable = true;
-              nixpkgs-fmt.enable = true;
-              shellcheck.enable = true;
-              shfmt.enable = true;
-              statix.enable = true;
-            };
+        treefmt = {
+          projectRootFile = "flake.lock";
+          programs = {
+            deadnix.enable = true;
+            nixfmt.enable = true;
+            shfmt.enable = true;
+            statix.enable = true;
+            prettier.enable = true;
           };
         };
       };
