@@ -45,9 +45,11 @@
                 ${pkgs.qemu}/bin/qemu-img create -f qcow2 "$disk" 20G
               fi
               ${pkgs.qemu}/bin/qemu-system-x86_64 \
+                -machine q35 -accel kvm \
                 -cpu host \
                 -enable-kvm \
                 -m 2G \
+                -smp 4 \
                 -bios ${pkgs.OVMF.fd}/FV/OVMF.fd \
                 -cdrom ${config.packages.installer-iso}/iso/*.iso \
                 -hda "$disk"
