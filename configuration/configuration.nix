@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 
 {
   imports = [
@@ -6,76 +6,119 @@
     ./modules/firmware.nix
     ./modules/nix-unstable.nix
     ./modules/flakes.nix
-    ./modules/nixcademy-gdm-logo.nix
-    ./modules/nixcademy-gnome-background.nix
-    ./modules/nixcademy-plymouth-logo.nix
     ./modules/save-space.nix
-    ./modules/virtualization.nix
   ];
 
   nixpkgs.config.allowUnfree = true;
 
-  networking.hostName = "nixos-training";
+  networking.hostName = "cam-monitor";
 
   boot.initrd.systemd.enable = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   networking.firewall.logRefusedConnections = false;
   networking.networkmanager.enable = true;
+  networking.networkmanager.wifi.powersave = false;
 
-  services.avahi = {
-    enable = true;
-    ipv4 = true;
-    ipv6 = true;
-    nssmdns4 = true;
-    publish = {
-      enable = true;
-      domain = true;
-      addresses = true;
-    };
-  };
+  time.timeZone = "America/Los_Angeles";
 
   environment.systemPackages = with pkgs; [
+    chromium
+    curl
     git
+    htop
     vim
-    wget
-    tmux
-    unzip
   ];
 
-  services.xserver.enable = true;
-  services.displayManager.gdm.enable = true;
-  services.desktopManager.gnome.enable = true;
-  services.libinput.enable = true;
-
-  boot.plymouth.enable = true;
-
-  customization = {
-    gdm-logo.enable = true;
-    gnome-background.enable = true;
-    plymouth-logo.enable = true;
-  };
-
-  hardware.graphics = {
-    enable = true;
-    enable32Bit = true;
-  };
-
-  security.sudo.wheelNeedsPassword = false;
-  services.openssh = {
-    enable = true;
-    settings.PermitRootLogin = "yes";
-  };
-  users.mutableUsers = false;
-  users.extraUsers.root.password = "nixcademy";
-
-  users.users.nixcademy = {
+  users.users.cam = {
     isNormalUser = true;
     extraGroups = [
       "wheel"
       "networkmanager"
-      "kvm"
+      "tty"
     ];
-    initialPassword = "nixcademy";
+    hashedPassword = "$6$kawWse.yi13oG6Y5$WL/evbWMI2A/hoUYqBNiM6zW1JcQKunHI9CebS71u3D9CxlNpUcQiD3q9Obkj4leuD.O6L1KY4LwHlIsMdec..";
   };
+  security.sudo.wheelNeedsPassword = false;
+
+  systemd.sleep.extraConfig = ''
+    AllowSuspend=no
+    AllowHibernation=no
+    AllowHybridSleep=no
+    AllowSuspendThenHibernate=no
+  '';
+
+  services = {
+    openssh = {
+      enable = true;
+      settings.PermitRootLogin = "no";
+    };
+    logind.extraConfig = ''
+      HandlePowerKey=reboot
+      HandlePowerKeyLongPress=poweroff
+    '';
+    getty.autologinUser = "cam";
+    unclutter.enable = true;
+    xscreensaver.enable = false;
+  };
+
+  powerManagement.enable = false;
+
+  services.xserver.excludePackages = with pkgs; [
+    lxqt.lxqt-notificationd
+    lxqt.lxqt-powermanagement
+    xscreensaver
+  ];
+
+  environment.lxqt.excludePackages = with pkgs; [
+    lxqt.lxqt-notificationd
+    lxqt.lxqt-powermanagement
+    xscreensaver
+  ];
+
+  services.xserver = {
+    enable = true;
+    displayManager = {
+      lightdm.enable = true;
+    };
+    desktopManager.lxqt.enable = true;
+  };
+  services.displayManager = {
+    defaultSession = "lxqt";
+    autoLogin = {
+      enable = true;
+      user = "cam";
+    };
+  };
+
+  systemd.services.cam-monitor = {
+    enable = true;
+    wantedBy = [ "multi-user.target" ];
+    requires = [ "network-online.target" ];
+    after = [ "network-online.target" ];
+    path = with pkgs; [
+      bash
+      chromium
+      coreutils
+      gawk
+      iproute2
+    ];
+    serviceConfig = {
+      User = "cam";
+      Environment = [ "DISPLAY=:0" ];
+      Restart = "always";
+      RestartSec = 5;
+      ExecStart = "${pkgs.bash}/bin/bash /etc/monitor.sh";
+    };
+  };
+
+  environment.etc = {
+    "monitor.sh" = {
+      source = ./monitor.sh;
+      mode = "0755";
+      user = "cam";
+    };
+  };
+
+  system.stateVersion = "25.05";
 }
