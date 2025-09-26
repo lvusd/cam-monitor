@@ -64,6 +64,17 @@
 
   powerManagement.enable = false;
 
+  services.xserver.resolutions = [
+    {
+      x = 1920;
+      y = 1440;
+    }
+    {
+      x = 1920;
+      y = 1080;
+    }
+  ];
+
   services.xserver.excludePackages = with pkgs; [
     lxqt.lxqt-notificationd
     lxqt.lxqt-powermanagement
