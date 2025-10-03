@@ -57,6 +57,8 @@
       HandlePowerKey=reboot
       HandlePowerKeyLongPress=poweroff
     '';
+    logind.powerKey = "reboot";
+    logind.powerKeyLongPress = "poweroff";
     getty.autologinUser = "cam";
     unclutter.enable = true;
     xscreensaver.enable = false;
@@ -100,6 +102,15 @@
       enable = true;
       user = "cam";
     };
+  };
+
+  systemd.timers."cam-monitor"  = {
+    wantedBy = [ "timers.target" ];
+      timerConfig = {
+        Persistent = true;
+        Unit = "cam-monitor.service";
+        OnCalendar = "*-*-* 6:00:00 America/Los_Angeles";
+      };
   };
 
   systemd.services.cam-monitor = {

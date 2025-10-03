@@ -17,15 +17,10 @@ declare -A group=(
   [52]="chs"
   [81]="lvdo"
 )
-site_code=$(ip -4 addr | awk '/inet 10./ {print $2}' | cut -d '.' -f 2)
+site_code=$(ip -4 addr | awk '/inet 10./ {print $2}' | cut -d '.' -f 2 | head -n 1)
 count=12
-
-while [ -z "${group[$site_code]}" ]
-do
-  sleep 1
-done
 
 url="https://cam-monitor.lvusd.org/cam-monitor/index-beelink.html?group=${group[$site_code]}&count=$count"
 
-# Launch Chrome in fullscreen
+# Launch Chromium in fullscreen
 chromium $url --hide-crash-restore-bubble --hide-scrollbars --start-fullscreen --password-store=basic --restart
